@@ -203,6 +203,7 @@ The backend is deployed as serverless functions on **Vercel**.
                   "package-lock.json"
                 ]
               }
+            }
             ],
             "routes": [
               {

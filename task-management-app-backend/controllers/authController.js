@@ -1,21 +1,17 @@
-// backend/controllers/authController.js
+
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const nodemailer = require('nodemailer'); // For sending emails
-const crypto = require('crypto'); // Node.js built-in crypto module
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
-// Helper function to generate JWT
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -50,9 +46,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Authenticate a user (Login)
-// @route   POST /api/auth/login
-// @access  Public
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -72,23 +65,14 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
-// @access  Private
 const getMe = asyncHandler(async (req, res) => {
   res.status(200).json(req.user);
 });
 
-// @desc    Log out user (client-side token removal)
-// @route   POST /api/auth/logout (conceptual, more client-side focused)
-// @access  Private
 const logoutUser = asyncHandler(async (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 });
 
-// @desc    Forgot Password - Send reset link to email
-// @route   POST /api/auth/forgotpassword
-// @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -99,30 +83,25 @@ const forgotPassword = asyncHandler(async (req, res) => {
     throw new Error('User with that email not found');
   }
 
-  // Get reset token
   const resetToken = user.getResetPasswordToken();
-  await user.save({ validateBeforeSave: false }); // Save user with token and expiry
+  await user.save({ validateBeforeSave: false });
 
-  // Create reset URL (Frontend URL + token)
   const resetUrl = `${process.env.FRONTEND_URL}/resetpassword/${resetToken}`;
 
   const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please make a PUT request to: \n\n ${resetUrl} \n\n This token will expire in 15 minutes.`;
 
   try {
-    // --- Nodemailer setup (PLACEHOLDER) ---
-    // You need to configure a transporter with your email service credentials
     const transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE, // e.g., 'gmail', 'SendGrid'
+      service: process.env.EMAIL_SERVICE,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      // If using Gmail, you might need to enable "Less secure app access" or use App Passwords
     });
 
     const mailOptions = {
       to: user.email,
-      from: process.env.EMAIL_FROM, // Your sender email
+      from: process.env.EMAIL_FROM,
       subject: 'Password Reset Token',
       text: message,
     };
@@ -141,16 +120,13 @@ const forgotPassword = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Reset Password - Using token from URL
-// @route   PUT /api/auth/resetpassword/:resettoken
-// @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
-  // Get hashed token from URL parameter
+
   const resetPasswordToken = crypto.createHash('sha256').update(req.params.resettoken).digest('hex');
 
   const user = await User.findOne({
     resetPasswordToken,
-    resetPasswordExpire: { $gt: Date.now() }, // Token must not be expired
+    resetPasswordExpire: { $gt: Date.now() },
   });
 
   if (!user) {
@@ -158,8 +134,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     throw new Error('Invalid or expired reset token');
   }
 
-  // Set new password
-  user.password = req.body.password; // Password will be hashed by pre-save hook
+  user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
 

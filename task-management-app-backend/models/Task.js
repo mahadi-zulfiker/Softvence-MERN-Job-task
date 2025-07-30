@@ -1,4 +1,4 @@
-// backend/models/Task.js
+
 const mongoose = require('mongoose');
 
 const taskSchema = mongoose.Schema(
@@ -6,7 +6,7 @@ const taskSchema = mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User', // Reference to the User model
+      ref: 'User',
     },
     title: {
       type: String,
@@ -16,7 +16,7 @@ const taskSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      required: false, // Description is optional
+      required: false,
       trim: true,
     },
     status: {
@@ -31,11 +31,11 @@ const taskSchema = mongoose.Schema(
     },
     dueDate: {
       type: Date,
-      required: false, // Due date is optional
+      required: false,
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt timestamps
+    timestamps: true,
   }
 );
 
